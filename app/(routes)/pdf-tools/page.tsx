@@ -1,7 +1,8 @@
 "use client"
-import { FileText, FileType, Minimize2 } from 'lucide-react'
+import { FileText, FileType, Minimize2, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React from 'react'
+import { Button } from '@/components/ui/button'
 
 function PDFTools() {
     const router = useRouter()
@@ -62,6 +63,10 @@ function PDFTools() {
                                     <h3 className='font-bold text-xl mb-2'>{tool.title}</h3>
                                     <p className='text-gray-600'>{tool.description}</p>
                                 </div>
+                                <Button className='w-full mt-2'>
+                                    Select Tool
+                                    <ArrowRight className='ml-2 h-4 w-4' />
+                                </Button>
                             </div>
                         </button>
                     )
