@@ -8,7 +8,7 @@ import {
     SidebarHeader,
     SidebarMenu,
 } from "@/components/ui/sidebar"
-import { ArrowLeftRight, CircleDollarSign, FileSearch, FileType, Paintbrush, Sparkles, History, Workflow, Home, Minimize2 } from "lucide-react"
+import { ArrowLeftRight, CircleDollarSign, FileSearch, FileText, Paintbrush, Sparkles, History, Workflow, Home } from "lucide-react"
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
@@ -29,19 +29,9 @@ const items = [
         icon: ArrowLeftRight,
     },
     {
-        title: "Word to PDF",
-        url: "/word-to-pdf",
-        icon: FileType,
-    },
-    {
-        title: "PDF to Word",
-        url: "/pdf-to-word",
-        icon: FileType,
-    },
-    {
-        title: "PDF Compress",
-        url: "/pdf-compress",
-        icon: Minimize2,
+        title: "PDF Tools",
+        url: "/pdf-tools",
+        icon: FileText,
     },
     {
         title: "Plagiarism Checker",
