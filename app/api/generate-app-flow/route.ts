@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { db } from "@/configs/db";
 import { AppFlowGeneratorTable, usersTable } from "@/configs/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 //@ts-ignore
 import uuid4 from "uuid4";
 
@@ -173,7 +173,7 @@ export async function GET(req: Request) {
         const result = await db.select()
             .from(AppFlowGeneratorTable)
             .where(eq(AppFlowGeneratorTable.createdBy, email))
-            .orderBy(AppFlowGeneratorTable.createdAt);
+            .orderBy(desc(AppFlowGeneratorTable.createdAt));
         return NextResponse.json(result);
     }
 

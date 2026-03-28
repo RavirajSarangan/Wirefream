@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { useAuthContext } from '../provider';
 import { useRouter } from 'next/navigation';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -16,20 +16,30 @@ function DashboardProvider({
     const user = useAuthContext();
     const router = useRouter();
 
+    const checkUser = useCallback(async () => {
+        try {
+            await axios.post('/api/user', {
+                userName: user?.user?.displayName,
+                userEmail: user?.user?.email
+            });
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error('User check failed:', error.message);
+            } else {
+                console.error('Unexpected error during user check:', error);
+            }
+        }
+    }, [user?.user?.displayName, user?.user?.email]);
+
     useEffect(() => {
-        if (!user?.user && user.user) return router.replace('/')
-        user?.user && checkUser()
-
-    }, [user])
-
-
-    const checkUser = async () => {
-        await axios.post('/api/user', {
-            userName: user?.user?.displayName,
-            userEmail: user?.user?.email
-        });
-        console.log(user);
-    }
+        if (user?.user === null) {
+            router.replace('/');
+            return;
+        }
+        if (user?.user) {
+            checkUser();
+        }
+    }, [user, checkUser, router])
 
 
     return (
@@ -37,8 +47,7 @@ function DashboardProvider({
             <AppSidebar />
             <main className='w-full'>
                 <AppHeader />
-                {/* <SidebarTrigger /> */}
-                <div className='p-10'>{children}</div>
+                <div className='p-5 md:p-10'>{children}</div>
             </main>
         </SidebarProvider>
 

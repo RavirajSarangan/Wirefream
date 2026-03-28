@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const creditResult = await db.select().from(usersTable)
         .where(eq(usersTable.email, email));
 
-    if (creditResult[0]?.credits && creditResult[0]?.credits > 0) {
+    if (creditResult.length > 0 && creditResult[0]?.credits && creditResult[0]?.credits > 0) {
 
         const result = await db.insert(WireframeToCodeTable).values({
             uid: uid.toString(),

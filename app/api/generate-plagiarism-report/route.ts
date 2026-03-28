@@ -23,15 +23,24 @@ export async function POST(req: NextRequest) {
         // Sanitize function to remove WinAnsi-incompatible characters
         const sanitizeText = (text: string): string => {
             if (!text) return ''
-            return text
+            // Remove common problematic characters
+            let cleaned = text
                 .replaceAll(/[\u2018\u2019\u02bc]/g, "'")  // Smart quotes
                 .replaceAll(/[\u201c\u201d]/g, '"')        // Smart double quotes
                 .replaceAll(/[\u2013\u2014]/g, '-')        // Dashes
-                .replaceAll('\u2026', '...')              // Ellipsis
-                .replaceAll('\u00a0', ' ')                // Non-breaking space
+                .replaceAll('…', '...')                   // Ellipsis
+                .replaceAll(' ', ' ')                     // Non-breaking space
                 .replaceAll('\t', '    ')                 // Tabs
-                .replaceAll(/[\x00-\x08\x0b-\x1f]/g, '')  // Control chars
-                .replaceAll(/[^\x20-\x7E\n]/g, '')        // Non-ASCII
+            // Remove control characters (ASCII 0-31 except newline)
+            cleaned = cleaned.split('').filter(char => {
+                const code = char.codePointAt(0) ?? 0
+                return code >= 32 || code === 10
+            }).join('')
+            // Keep only printable ASCII and newlines
+            return cleaned.split('').filter(char => {
+                const code = char.codePointAt(0) ?? 0
+                return (code >= 32 && code <= 126) || code === 10
+            }).join('')
         }
 
         // Create PDF document
@@ -155,9 +164,14 @@ export async function POST(req: NextRequest) {
         yPosition -= 30
 
         // Similarity Score
-        const simColor = similarityScore <= 15 ? rgb(0, 0.6, 0) : 
-                        similarityScore <= 40 ? rgb(0.8, 0.8, 0) : 
-                        rgb(0.8, 0, 0)
+        let simColor
+        if (similarityScore <= 15) {
+            simColor = rgb(0, 0.6, 0)
+        } else if (similarityScore <= 40) {
+            simColor = rgb(0.8, 0.8, 0)
+        } else {
+            simColor = rgb(0.8, 0, 0)
+        }
         
         page.drawText(`Similarity Score: ${similarityScore}%`, {
             x: margin,
@@ -169,9 +183,14 @@ export async function POST(req: NextRequest) {
         yPosition -= 20
 
         // AI Detection Score
-        const aiColor = aiDetectionScore <= 30 ? rgb(0, 0.6, 0) : 
-                       aiDetectionScore <= 70 ? rgb(0.8, 0.8, 0) : 
-                       rgb(0.6, 0, 0.8)
+        let aiColor
+        if (aiDetectionScore <= 30) {
+            aiColor = rgb(0, 0.6, 0)
+        } else if (aiDetectionScore <= 70) {
+            aiColor = rgb(0.8, 0.8, 0)
+        } else {
+            aiColor = rgb(0.6, 0, 0.8)
+        }
         
         page.drawText(`AI Detection Score: ${aiDetectionScore}%`, {
             x: margin,
@@ -244,9 +263,14 @@ export async function POST(req: NextRequest) {
             for (const section of suspiciousSections.slice(0, 10)) { // Limit to 10 for space
                 page = checkNewPage(60, page)
 
-                const severityColor = section.severity === 'high' ? rgb(0.8, 0, 0) :
-                                    section.severity === 'medium' ? rgb(0.8, 0.6, 0) :
-                                    rgb(0.8, 0.4, 0)
+                let severityColor
+                if (section.severity === 'high') {
+                    severityColor = rgb(0.8, 0, 0)
+                } else if (section.severity === 'medium') {
+                    severityColor = rgb(0.8, 0.6, 0)
+                } else {
+                    severityColor = rgb(0.8, 0.4, 0)
+                }
                 const typeText = section.type ? ` (${sanitizeText(section.type)})` : ''
                 page.drawText(`- ${section.severity.toUpperCase()} RISK${typeText}`, {
                     x: margin,

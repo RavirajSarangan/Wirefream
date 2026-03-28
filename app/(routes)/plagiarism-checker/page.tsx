@@ -7,12 +7,14 @@ import React, { ChangeEvent, useState } from 'react'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { useAuthContext } from '@/app/provider'
+import { useRouter } from 'next/navigation'
 import PlagiarismReport from './_components/PlagiarismReport'
 import Image from 'next/image'
 import Constants from '@/data/Constants'
 
 function PlagiarismChecker() {
     const { user } = useAuthContext()
+    const router = useRouter()
     const [file, setFile] = useState<File | null>(null)
     const [textInput, setTextInput] = useState<string>('')
     const [loading, setLoading] = useState(false)
@@ -75,6 +77,7 @@ function PlagiarismChecker() {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                timeout: 60000, // 60 second timeout
             })
 
             if (response.data.text) {
@@ -83,7 +86,20 @@ function PlagiarismChecker() {
             }
         } catch (error: any) {
             console.error('Extraction error:', error)
-            toast.error(error.response?.data?.error || 'Failed to extract text from file')
+            
+            if (axios.isAxiosError(error)) {
+                if (error.code === 'ECONNABORTED') {
+                    toast.error('Request timed out. Please try a smaller file.')
+                } else if (error.code === 'ERR_NETWORK') {
+                    toast.error('Network error. Please check your connection and try again.')
+                } else if (error.response) {
+                    toast.error(error.response.data?.error || 'Failed to extract text from file')
+                } else {
+                    toast.error('Failed to connect to server. Please try again.')
+                }
+            } else {
+                toast.error('An unexpected error occurred')
+            }
             setFile(null)
         } finally {
             setExtracting(false)
@@ -115,6 +131,8 @@ function PlagiarismChecker() {
                 fileName: file?.name || 'Direct Text Input',
                 email: user?.email,
                 model: selectedModel
+            }, {
+                timeout: 120000, // 2 minute timeout for AI processing
             })
 
             if (response.data.success) {
@@ -125,7 +143,20 @@ function PlagiarismChecker() {
             }
         } catch (error: any) {
             console.error('Plagiarism check error:', error)
-            toast.error(error.response?.data?.error || 'Failed to check plagiarism')
+            
+            if (axios.isAxiosError(error)) {
+                if (error.code === 'ECONNABORTED') {
+                    toast.error('Request timed out. The text might be too long. Please try with a shorter text.')
+                } else if (error.code === 'ERR_NETWORK') {
+                    toast.error('Network error. Please check your connection and try again.')
+                } else if (error.response) {
+                    toast.error(error.response.data?.error || 'Failed to check plagiarism')
+                } else {
+                    toast.error('Failed to connect to server. Please try again.')
+                }
+            } else {
+                toast.error('An unexpected error occurred')
+            }
         } finally {
             setLoading(false)
         }
@@ -144,7 +175,7 @@ function PlagiarismChecker() {
                 <h2 className='font-bold text-3xl'>Plagiarism Checker</h2>
                 <Button 
                     variant='outline' 
-                    onClick={() => globalThis.location.href = '/history'}
+                    onClick={() => router.push('/history')}
                     className='gap-2'
                 >
                     <FileText className='h-4 w-4' />

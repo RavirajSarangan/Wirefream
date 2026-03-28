@@ -7,7 +7,6 @@ import { useParams, usePathname } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import SelectionDetail from '../_components/SelectionDetail'
 import CodeEditor from '../_components/CodeEditor'
-import { read } from 'fs'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 
@@ -31,7 +30,7 @@ function ViewCode() {
     const [isReady, setIsReady] = useState(false);
     // const [isExistingCode,setIsExistingCode]=useState();
     useEffect(() => {
-        if (typeof window !== undefined) {
+        if (typeof window !== "undefined") {
             uid && GetRecordInfo();
 
         }
@@ -48,7 +47,7 @@ function ViewCode() {
         const resp = result?.data;
         setRecord(result?.data)
 
-        if (resp?.code == null || regen) {
+        if (resp?.code === null || regen) {
             GenerateCode(resp);
         }
         else {
@@ -93,7 +92,7 @@ function ViewCode() {
     }
 
     useEffect(() => {
-        if (codeResp != '' && record?.uid && isReady && record?.code == null) {
+        if (codeResp !== '' && record?.uid && isReady && record?.code === null) {
             UpdateCodeToDb();
         }
     }, [codeResp && record && isReady])

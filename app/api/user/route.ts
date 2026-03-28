@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const result = await db.select().from(usersTable)
         .where(eq(usersTable.email, userEmail));
 
-    if (result?.length == 0) {
+    if (result?.length === 0) {
 
         const result: any = await db.insert(usersTable).values({
             name: userName,
@@ -20,9 +20,9 @@ export async function POST(req: NextRequest) {
             // @ts-ignore
         }).returning(usersTable);
 
-        return NextResponse.json(result[0]);
+        return NextResponse.json(result.length > 0 ? result[0] : null);
     }
-    return NextResponse.json(result[0]);
+    return NextResponse.json(result.length > 0 ? result[0] : null);
 
 
     // } catch (e) {
@@ -38,6 +38,6 @@ export async function GET(req: Request) {
     if (email) {
         const result = await db.select().from(usersTable)
             .where(eq(usersTable.email, email));
-        return NextResponse.json(result[0]);
+        return NextResponse.json(result.length > 0 ? result[0] : null);
     }
 }

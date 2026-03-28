@@ -1,5 +1,7 @@
 "use client"
 import { useAuthContext } from '@/app/provider'
+
+// SEO: Private page - metadata in server component wrapper
 import axios from 'axios';
 import React, { useEffect, useState, useMemo } from 'react'
 import DesignCard from './_components/DesignCard';

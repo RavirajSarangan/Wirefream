@@ -1,5 +1,5 @@
 "use client"
-import { FileText, FileType, Minimize2 } from 'lucide-react'
+import { FileText, Minimize2, FileDown, FileUp } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
@@ -10,7 +10,7 @@ function PDFTools() {
         {
             title: "Word to PDF",
             description: "Convert Word documents to PDF format",
-            icon: FileType,
+            icon: FileDown,
             color: "bg-blue-50 hover:bg-blue-100 border-blue-200",
             iconColor: "text-blue-600",
             route: "/word-to-pdf"
@@ -18,7 +18,7 @@ function PDFTools() {
         {
             title: "PDF to Word",
             description: "Convert PDF files to Word documents",
-            icon: FileType,
+            icon: FileUp,
             color: "bg-green-50 hover:bg-green-100 border-green-200",
             iconColor: "text-green-600",
             route: "/pdf-to-word"

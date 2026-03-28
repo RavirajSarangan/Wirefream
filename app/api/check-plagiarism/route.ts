@@ -7,12 +7,12 @@ import Constants from "@/data/Constants";
 
 const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_AI_API_KEY,
+    apiKey: process.env.OPENROUTER_AI_API_KEY || process.env.OPENROUTER_API_KEY,
 });
 
 // Generate unique ID
 const generateUID = () => {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+    return crypto.randomUUID();
 };
 
 export const maxDuration = 300;
@@ -24,6 +24,10 @@ export async function POST(req: NextRequest) {
         // Check user credits
         const creditResult = await db.select().from(usersTable)
             .where(eq(usersTable.email, email));
+
+        if (!creditResult[0]) {
+            return NextResponse.json({ error: 'User not found. Please sign in.' }, { status: 404 });
+        }
 
         if (!creditResult[0]?.credits || creditResult[0]?.credits < 2) {
             return NextResponse.json({ 

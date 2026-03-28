@@ -1,5 +1,7 @@
 "use client"
 import { useAuthContext } from '@/app/provider'
+
+// SEO: Private page - metadata in server component wrapper
 import { Button } from '@/components/ui/button'
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
@@ -13,9 +15,14 @@ function Credits() {
     }, [user])
 
     const GetUserCredits = async () => {
-        const result = await axios.get('/api/user?email=' + user?.email);
-        console.log(result.data)
-        setUserData(result.data);
+        try {
+            const result = await axios.get('/api/user?email=' + user?.email);
+            console.log(result.data)
+            setUserData(result.data);
+        } catch (error) {
+            console.error('Failed to fetch user credits:', error);
+            // Silently fail - user can still see the page
+        }
     }
 
     return (

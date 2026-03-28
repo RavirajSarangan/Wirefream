@@ -7,6 +7,7 @@ import React, { useState, useRef } from 'react'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { useAuthContext } from '@/app/provider'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Constants from '@/data/Constants'
 import ScreenList from './_components/ScreenList'
@@ -44,6 +45,7 @@ interface AppFlowData {
 
 function AppFlowGenerator() {
     const { user } = useAuthContext()
+    const router = useRouter()
     const [appDescription, setAppDescription] = useState<string>('')
     const [selectedModel, setSelectedModel] = useState('Gemini Google')
     const [loading, setLoading] = useState(false)
@@ -181,7 +183,7 @@ function AppFlowGenerator() {
                 </div>
                 <Button 
                     variant='outline' 
-                    onClick={() => globalThis.location.href = '/flow-history'}
+                    onClick={() => router.push('/flow-history')}
                     className='gap-2'
                 >
                     <History className='h-4 w-4' />

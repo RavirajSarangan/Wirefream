@@ -1,0 +1,15 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow private pages
+Disallow: /dashboard
+Disallow: /history
+Disallow: /designs
+Disallow: /credits
+Disallow: /view-code/
+Disallow: /api/
+Disallow: /plagiarism-history
+
+# Sitemap location
+Sitemap: https://wireframetocode.com/sitemap.xml

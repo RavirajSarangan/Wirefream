@@ -6,11 +6,11 @@ import PlagiarismHistoryCard from './_components/PlagiarismHistoryCard'
 import ViewReportDialog from './_components/ViewReportDialog'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Search, History, Paintbrush, Sparkles, ArrowLeftRight, Trash2 } from 'lucide-react'
+import { Search, History, Trash2 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import DesignCard from '../designs/_components/DesignCard'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -25,7 +25,7 @@ import { toast } from 'sonner'
 
 interface UnifiedActivity {
     id: string
-    type: 'wireframe-to-code' | 'generated-wireframe' | 'ui-to-wireframe' | 'plagiarism-check'
+    type: 'wireframe-to-code' | 'plagiarism-check'
     title: string
     description?: string
     createdAt: string
@@ -34,6 +34,7 @@ interface UnifiedActivity {
 
 function UnifiedHistory() {
     const { user } = useAuthContext()
+    const router = useRouter()
     const [activities, setActivities] = useState<UnifiedActivity[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
@@ -43,6 +44,8 @@ function UnifiedHistory() {
     const [showReportDialog, setShowReportDialog] = useState(false)
     const [deleteItem, setDeleteItem] = useState<{ uid: string; type: string } | null>(null)
     const [deleting, setDeleting] = useState(false)
+    const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false)
+    const [deletingAll, setDeletingAll] = useState(false)
 
     useEffect(() => {
         if (user) {
@@ -53,10 +56,8 @@ function UnifiedHistory() {
     const fetchAllActivities = async () => {
         setLoading(true)
         try {
-            const [wireframes, generatedWireframes, uiToWireframes, plagiarismChecks] = await Promise.all([
+            const [wireframes, plagiarismChecks] = await Promise.all([
                 axios.get(`/api/wireframe-to-code?email=${user?.email}`).catch(() => ({ data: [] })),
-                axios.get(`/api/generate-wireframe?email=${user?.email}`).catch(() => ({ data: [] })),
-                axios.get(`/api/ui-to-wireframe?email=${user?.email}`).catch(() => ({ data: [] })),
                 axios.get(`/api/check-plagiarism?email=${user?.email}`).catch(() => ({ data: [] }))
             ])
 
@@ -65,22 +66,6 @@ function UnifiedHistory() {
                     id: item.uid || item.id,
                     type: 'wireframe-to-code' as const,
                     title: item.description || 'Wireframe Conversion',
-                    description: item.description,
-                    createdAt: item.createdAt,
-                    data: item
-                })),
-                ...(generatedWireframes.data || []).map((item: any) => ({
-                    id: item.uid || item.id,
-                    type: 'generated-wireframe' as const,
-                    title: item.prompt || 'Generated Wireframe',
-                    description: item.prompt,
-                    createdAt: item.createdAt,
-                    data: item
-                })),
-                ...(uiToWireframes.data || []).map((item: any) => ({
-                    id: item.uid || item.id,
-                    type: 'ui-to-wireframe' as const,
-                    title: item.description || 'UI to Wireframe Conversion',
                     description: item.description,
                     createdAt: item.createdAt,
                     data: item
@@ -115,9 +100,7 @@ function UnifiedHistory() {
         try {
             const endpointMap: Record<string, string> = {
                 'wireframe-to-code': '/api/wireframe-to-code',
-                'plagiarism-check': '/api/check-plagiarism',
-                'generated-wireframe': '/api/generate-wireframe',
-                'ui-to-wireframe': '/api/ui-to-wireframe'
+                'plagiarism-check': '/api/check-plagiarism'
             }
 
             const endpoint = endpointMap[deleteItem.type]
@@ -126,7 +109,7 @@ function UnifiedHistory() {
                 return
             }
 
-            await axios.delete(`${endpoint}?uid=${deleteItem.uid}`)
+            await axios.delete(`${endpoint}?uid=${deleteItem.uid}&email=${user?.email}`)
             
             setActivities(prev => prev.filter((item) => item.id !== deleteItem.uid))
             toast.success('Activity deleted successfully')
@@ -139,21 +122,43 @@ function UnifiedHistory() {
         }
     }
 
+    const confirmDeleteAll = async () => {
+        setDeletingAll(true)
+        try {
+            const deletePromises = activities.map(async (activity) => {
+                const endpointMap: Record<string, string> = {
+                    'wireframe-to-code': '/api/wireframe-to-code',
+                    'plagiarism-check': '/api/check-plagiarism'
+                }
+                const endpoint = endpointMap[activity.type]
+                if (endpoint) {
+                    await axios.delete(`${endpoint}?uid=${activity.id}&email=${user?.email}`)
+                }
+            })
+
+            await Promise.all(deletePromises)
+            setActivities([])
+            toast.success('All activities deleted successfully')
+        } catch (error: any) {
+            console.error('Delete all error:', error)
+            toast.error('Failed to delete some activities')
+        } finally {
+            setDeletingAll(false)
+            setShowDeleteAllDialog(false)
+        }
+    }
+
     const handleView = (item: UnifiedActivity) => {
         if (item.type === 'plagiarism-check') {
             setSelectedReport(item.data)
             setShowReportDialog(true)
         } else if (item.type === 'wireframe-to-code') {
-            globalThis.location.href = `/view-code/${item.id}`
-        } else if (item.type === 'generated-wireframe' || item.type === 'ui-to-wireframe') {
-            // View design details
-            if (item.data.imageUrl) {
-                globalThis.location.href = `/designs`
-            } else {
-                toast.info('No preview available for this item')
-            }
+            router.push(`/view-code/${item.id}`)
         }
     }
+
+    // Helper function to get AI model display info
+
 
     // Filter and sort activities
     const filteredActivities = useMemo(() => {
@@ -186,15 +191,7 @@ function UnifiedHistory() {
     }, [activities, searchTerm, activityTypeFilter, sortBy])
 
     // Calculate statistics
-    const stats = useMemo(() => {
-        return {
-            total: activities.length,
-            wireframes: activities.filter(a => a.type === 'wireframe-to-code').length,
-            generated: activities.filter(a => a.type === 'generated-wireframe').length,
-            uiConversions: activities.filter(a => a.type === 'ui-to-wireframe').length,
-            plagiarism: activities.filter(a => a.type === 'plagiarism-check').length
-        }
-    }, [activities])
+
 
     return (
         <div>
@@ -206,33 +203,18 @@ function UnifiedHistory() {
                     </div>
                     <p className='text-gray-500 mt-1'>View all your activities across all features</p>
                 </div>
+                {!loading && activities.length > 0 && (
+                    <Button
+                        variant="destructive"
+                        onClick={() => setShowDeleteAllDialog(true)}
+                        className="gap-2"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                        Delete All History
+                    </Button>
+                )}
             </div>
 
-            {/* Statistics Cards */}
-            {!loading && activities.length > 0 && (
-                <div className='grid grid-cols-2 md:grid-cols-5 gap-4 mb-6'>
-                    <div className='p-4 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg'>
-                        <div className='text-2xl font-bold text-blue-600'>{stats.total}</div>
-                        <div className='text-sm text-gray-600'>Total Activities</div>
-                    </div>
-                    <div className='p-4 bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg'>
-                        <div className='text-2xl font-bold text-purple-600'>{stats.wireframes}</div>
-                        <div className='text-sm text-gray-600'>Wireframes</div>
-                    </div>
-                    <div className='p-4 bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg'>
-                        <div className='text-2xl font-bold text-green-600'>{stats.generated}</div>
-                        <div className='text-sm text-gray-600'>Generated</div>
-                    </div>
-                    <div className='p-4 bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg'>
-                        <div className='text-2xl font-bold text-orange-600'>{stats.uiConversions}</div>
-                        <div className='text-sm text-gray-600'>UI Conversions</div>
-                    </div>
-                    <div className='p-4 bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg'>
-                        <div className='text-2xl font-bold text-red-600'>{stats.plagiarism}</div>
-                        <div className='text-sm text-gray-600'>Plagiarism Checks</div>
-                    </div>
-                </div>
-            )}
 
             {/* Filters Section */}
             <div className='mb-6 grid grid-cols-1 md:grid-cols-3 gap-4'>
@@ -256,8 +238,6 @@ function UnifiedHistory() {
                     <SelectContent>
                         <SelectItem value='all'>All Activities</SelectItem>
                         <SelectItem value='wireframe-to-code'>Wireframe to Code</SelectItem>
-                        <SelectItem value='generated-wireframe'>Generated Wireframe</SelectItem>
-                        <SelectItem value='ui-to-wireframe'>UI to Wireframe</SelectItem>
                         <SelectItem value='plagiarism-check'>Plagiarism Check</SelectItem>
                     </SelectContent>
                 </Select>
@@ -335,51 +315,8 @@ function UnifiedHistory() {
                                     onDelete={(uid: string) => handleDeleteClick(uid, activity.type)}
                                 />
                             )
-                        } else {
-                            // For generated-wireframe and ui-to-wireframe
-                            const config = {
-                                'generated-wireframe': { icon: Sparkles, label: 'Generated Wireframe', color: 'bg-purple-100 text-purple-800' },
-                                'ui-to-wireframe': { icon: ArrowLeftRight, label: 'UI to Wireframe', color: 'bg-green-100 text-green-800' }
-                            }[activity.type] || { icon: Paintbrush, label: 'Activity', color: 'bg-blue-100 text-blue-800' }
-                            
-                            const Icon = config.icon
-                            
-                            return (
-                                <div key={activity.id} className='p-5 border-2 rounded-lg hover:shadow-lg transition-all bg-white relative'>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute top-2 right-2 h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                        onClick={() => handleDeleteClick(activity.id, activity.type)}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                    <div className='flex items-start gap-3 mb-3'>
-                                        <div className={`p-2 rounded-lg ${config.color} border`}>
-                                            <Icon className='h-5 w-5' />
-                                        </div>
-                                        <div className='flex-1 pr-8'>
-                                            <h3 className='font-semibold text-lg line-clamp-2'>{activity.title}</h3>
-                                            <span className={`text-xs px-2 py-1 rounded-full ${config.color} border inline-block mt-1`}>
-                                                {config.label}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {activity.data.imageUrl && typeof activity.data.imageUrl === 'string' && (activity.data.imageUrl.startsWith('http://') || activity.data.imageUrl.startsWith('https://') || activity.data.imageUrl.startsWith('/')) && (
-                                        <Image 
-                                            src={activity.data.imageUrl} 
-                                            alt='Preview' 
-                                            width={300} 
-                                            height={150}
-                                            className='w-full h-32 object-cover rounded border mb-3'
-                                        />
-                                    )}
-                                    <Button size='sm' onClick={() => handleView(activity)} className='w-full'>
-                                        View Details
-                                    </Button>
-                                </div>
-                            )
                         }
+                        return null;
                     })}
                 </div>
             )}
@@ -408,6 +345,28 @@ function UnifiedHistory() {
                             className="bg-red-600 hover:bg-red-700"
                         >
                             {deleting ? 'Deleting...' : 'Delete'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Delete All Confirmation Dialog */}
+            <AlertDialog open={showDeleteAllDialog} onOpenChange={setShowDeleteAllDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete All History</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete ALL {activities.length} activities? This action cannot be undone and will permanently remove all your activity history.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deletingAll}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={confirmDeleteAll}
+                            disabled={deletingAll}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {deletingAll ? 'Deleting All...' : 'Delete All'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
