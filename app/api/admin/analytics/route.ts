@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
                 data = await getAnalytics();
                 break;
 
-            case 'user-growth':
+            case 'user-growth': {
                 // Get user creation data over time (last 30 days simulated)
                 const allUsers = await db.select().from(usersTable);
                 data = {
@@ -37,8 +37,9 @@ export async function GET(req: NextRequest) {
                     trend: 'up'
                 };
                 break;
+            }
 
-            case 'feature-usage':
+            case 'feature-usage': {
                 const wireframes = await db
                     .select()
                     .from(WireframeToCodeTable);
@@ -65,8 +66,9 @@ export async function GET(req: NextRequest) {
                     ]
                 };
                 break;
+            }
 
-            case 'credit-usage':
+            case 'credit-usage': {
                 const usersWithCredits = await db.select().from(usersTable);
                 const totalCreditsIssued = usersWithCredits.reduce(
                     (sum, u) => sum + (u.credits || 0),
@@ -81,6 +83,7 @@ export async function GET(req: NextRequest) {
                     averagePerUser: Math.round(totalCreditsIssued / usersWithCredits.length)
                 };
                 break;
+            }
 
             default:
                 data = await getAnalytics();

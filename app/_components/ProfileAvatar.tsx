@@ -30,6 +30,7 @@ function ProfileAvatar() {
                 });
                 setIsAdmin(response.data.isAdmin);
             } catch (error) {
+                console.error('Failed to check admin status:', error);
                 setIsAdmin(false);
             }
         };

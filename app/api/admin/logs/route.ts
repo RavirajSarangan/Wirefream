@@ -9,8 +9,8 @@ export async function GET(req: NextRequest) {
     try {
         const adminEmail = req.nextUrl.searchParams.get('adminEmail');
         const logType = req.nextUrl.searchParams.get('type') || 'audit';
-        const limit = parseInt(req.nextUrl.searchParams.get('limit') || '50');
-        const offset = parseInt(req.nextUrl.searchParams.get('offset') || '0');
+        const limit = Number.parseInt(req.nextUrl.searchParams.get('limit') || '50');
+        const offset = Number.parseInt(req.nextUrl.searchParams.get('offset') || '0');
 
         // Verify admin access
         if (!adminEmail || !(await verifyAdminAccess(adminEmail))) {
@@ -24,13 +24,14 @@ export async function GET(req: NextRequest) {
         let total = 0;
 
         switch (logType) {
-            case 'audit':
+            case 'audit': {
                 const auditData = await getAuditLogs(limit, offset);
                 logs = auditData.logs;
                 total = auditData.total;
                 break;
+            }
 
-            case 'access':
+            case 'access': {
                 const accessLogs = await db
                     .select()
                     .from(IPAccessLogsTable)
@@ -43,17 +44,20 @@ export async function GET(req: NextRequest) {
                 logs = accessLogs;
                 total = allAccessLogs.length;
                 break;
+            }
 
-            case 'suspicious':
+            case 'suspicious': {
                 const flags = await getUserFlags();
                 logs = flags.slice(offset, offset + limit);
                 total = flags.length;
                 break;
+            }
 
-            default:
+            default: {
                 const defaultLogs = await getAuditLogs(limit, offset);
                 logs = defaultLogs.logs;
                 total = defaultLogs.total;
+            }
         }
 
         return NextResponse.json({

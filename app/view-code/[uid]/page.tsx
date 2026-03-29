@@ -28,9 +28,8 @@ function ViewCode() {
     const [codeResp, setCodeResp] = useState('');
     const [record, setRecord] = useState<RECORD | null>();
     const [isReady, setIsReady] = useState(false);
-    // const [isExistingCode,setIsExistingCode]=useState();
     useEffect(() => {
-        if (typeof window !== "undefined") {
+        if (typeof globalThis.window !== "undefined") {
             uid && GetRecordInfo();
 
         }
@@ -58,7 +57,6 @@ function ViewCode() {
         if (resp?.error) {
             console.log("No Record Found")
         }
-        // setLoading(false);
     }
 
     const GenerateCode = async (record: RECORD) => {

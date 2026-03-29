@@ -221,7 +221,7 @@ export default function UsersPage() {
                                         type='number'
                                         value={editCredits}
                                         onChange={(e) =>
-                                            setEditCredits(parseInt(e.target.value) || 0)
+                                            setEditCredits(Number.parseInt(e.target.value) || 0)
                                         }
                                         min='0'
                                     />

@@ -74,7 +74,7 @@ export default function StudentApplicationsPage() {
         if (!selectedStudent || !user?.email) return
 
         try {
-            const response = await axios.post(
+            await axios.post(
                 `/api/admin/students/${selectedStudent.eid}/approve`,
                 {
                     adminEmail: user.email,
@@ -275,7 +275,7 @@ export default function StudentApplicationsPage() {
                                         <Input
                                             type='number'
                                             value={validityDays}
-                                            onChange={(e) => setValidityDays(parseInt(e.target.value) || 365)}
+                                            onChange={(e) => setValidityDays(Number.parseInt(e.target.value) || 365)}
                                             className='mt-1'
                                         />
                                     </div>

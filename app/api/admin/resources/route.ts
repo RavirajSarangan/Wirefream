@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
             resourceDescription,
             resourceUrl,
             resourceType,
-            fileSize: fileSize ? parseInt(fileSize) : 0,
+            fileSize: fileSize ? Number.parseInt(fileSize) : 0,
             fileType,
             createdBy: adminEmail,
             createdAt: new Date(),
@@ -59,8 +59,8 @@ export async function GET(req: NextRequest) {
     try {
         const adminEmail = req.nextUrl.searchParams.get('adminEmail');
         const section = req.nextUrl.searchParams.get('section');
-        const limit = parseInt(req.nextUrl.searchParams.get('limit') || '50');
-        const offset = parseInt(req.nextUrl.searchParams.get('offset') || '0');
+        const limit = Number.parseInt(req.nextUrl.searchParams.get('limit') || '50');
+        const offset = Number.parseInt(req.nextUrl.searchParams.get('offset') || '0');
 
         // Verify admin access
         if (!adminEmail || !(await verifyAdminAccess(adminEmail))) {

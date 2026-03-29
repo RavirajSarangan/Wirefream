@@ -6,8 +6,8 @@ export async function GET(req: NextRequest) {
     try {
         const adminEmail = req.nextUrl.searchParams.get('adminEmail');
         const status = req.nextUrl.searchParams.get('status') || 'pending'; // pending, approved, all
-        const limit = parseInt(req.nextUrl.searchParams.get('limit') || '50');
-        const offset = parseInt(req.nextUrl.searchParams.get('offset') || '0');
+        const limit = Number.parseInt(req.nextUrl.searchParams.get('limit') || '50');
+        const offset = Number.parseInt(req.nextUrl.searchParams.get('offset') || '0');
 
         // Verify admin access
         if (!adminEmail || !(await verifyAdminAccess(adminEmail))) {

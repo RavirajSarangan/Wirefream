@@ -9,8 +9,8 @@ import {
 export async function GET(req: NextRequest) {
     try {
         const adminEmail = req.nextUrl.searchParams.get('adminEmail');
-        const limit = parseInt(req.nextUrl.searchParams.get('limit') || '50');
-        const offset = parseInt(req.nextUrl.searchParams.get('offset') || '0');
+        const limit = Number.parseInt(req.nextUrl.searchParams.get('limit') || '50');
+        const offset = Number.parseInt(req.nextUrl.searchParams.get('offset') || '0');
         const search = req.nextUrl.searchParams.get('search');
 
         // Verify admin access
@@ -104,7 +104,7 @@ export async function DELETE(req: NextRequest) {
         }
 
         // Delete user
-        const deleted = await deleteUser(parseInt(userId));
+        const deleted = await deleteUser(Number.parseInt(userId));
 
         if (!deleted) {
             return NextResponse.json(
