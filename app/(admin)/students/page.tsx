@@ -16,7 +16,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { CheckCircle, XCircle, Clock, User } from 'lucide-react'
+import { CheckCircle, XCircle, Clock } from 'lucide-react'
 
 interface StudentApplication {
     id: number

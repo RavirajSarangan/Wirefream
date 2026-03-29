@@ -7,7 +7,6 @@ import {
     WireframeToCodeTable,
     PlagiarismChecksTable
 } from '@/configs/schema';
-import { desc } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
     try {

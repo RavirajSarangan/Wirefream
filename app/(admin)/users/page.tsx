@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useAuthContext } from '@/app/provider'
 import axios from 'axios'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import UserTable from './_components/UserTable'
 import { toast } from 'sonner'
 import {

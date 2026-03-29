@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useMemo } from 'react';
 import { StudentContext, StudentContextType, StudentAuthState } from './StudentContext';
 import axios from 'axios';
 
@@ -39,7 +39,7 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
             }));
 
             // Verify student exists and get status
-            const response = await axios.get('/api/student/status', {
+            await axios.get('/api/student/status', {
                 params: { eid },
             });
 
@@ -78,12 +78,12 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }));
     };
 
-    const value: StudentContextType = {
+    const value: StudentContextType = useMemo(() => ({
         student,
         loginWithEid,
         logout,
         clearError,
-    };
+    }), [student, loginWithEid, logout, clearError]);
 
     return (
         <StudentContext.Provider value={value}>

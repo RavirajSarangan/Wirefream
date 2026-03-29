@@ -16,7 +16,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Trash2, Edit2, FileText, BookOpen } from 'lucide-react';
+import { Plus, Trash2, FileText, BookOpen } from 'lucide-react';
 
 interface Resource {
     id: number;

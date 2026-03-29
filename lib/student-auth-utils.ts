@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 export function validateEidFormat(eid: string): boolean {
     if (!eid || eid.trim().length === 0) return false;
     // Accept alphanumeric with slashes and hyphens
-    const eidRegex = /^[A-Za-z0-9/\-]+$/;
+    const eidRegex = /^[A-Za-z0-9/-]+$/;
     return eidRegex.test(eid) && eid.length >= 5 && eid.length <= 50;
 }
 

@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, logAdminAction } from '@/lib/auth-utils';
 import {
     fetchAllUsers,
-    fetchUserById,
     updateUser,
-    deleteUser,
-    getAuditLogs
+    deleteUser
 } from '@/lib/admin-queries';
 
 export async function GET(req: NextRequest) {

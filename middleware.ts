@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess } from './lib/auth-utils';
 
 // Admin routes that require authentication and admin role
 const adminRoutes = ['/admin'];

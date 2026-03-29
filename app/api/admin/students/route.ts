@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess, logAdminAction } from '@/lib/auth-utils';
-import { getPendingApplications, getStudentApprovalHistory } from '@/lib/student-queries';
+import { verifyAdminAccess } from '@/lib/auth-utils';
+import { getPendingApplications } from '@/lib/student-queries';
 
 export async function GET(req: NextRequest) {
     try {
