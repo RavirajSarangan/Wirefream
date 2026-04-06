@@ -112,8 +112,8 @@ function PlagiarismChecker() {
             return
         }
 
-        if (wordCount > 10000) {
-            toast.error('Text must be less than 10,000 words')
+        if (wordCount > 1000000) {
+            toast.error('Text must be less than 1,000,000 words')
             return
         }
 
@@ -275,7 +275,7 @@ function PlagiarismChecker() {
                                 <h3 className='font-semibold text-lg'>Enter Text</h3>
                                 <div className='text-sm text-gray-500'>
                                     {wordCount} words | {charCount} characters
-                                    {wordCount > 10000 && <span className='text-red-500 ml-2'>(Max: 10,000 words)</span>}
+                                    {wordCount > 1000000 && <span className='text-red-500 ml-2'>(Max: 1,000,000 words)</span>}
                                 </div>
                             </div>
                             <Textarea
@@ -330,28 +330,35 @@ function PlagiarismChecker() {
                     )}
 
                     {/* Check Button */}
-                    <div className='flex items-center justify-center gap-4'>
-                        <Button 
-                            onClick={onCheckPlagiarism} 
-                            disabled={!textInput.trim() || loading || extracting || wordCount > 10000}
-                            size='lg'
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2Icon className='mr-2 animate-spin' />
-                                    Analyzing...
-                                </>
-                            ) : (
-                                <>
-                                    <FileSearch className='mr-2' />
-                                    Check Plagiarism (2 Credits)
-                                </>
-                            )}
-                        </Button>
-                        {(textInput || file) && !loading && (
-                            <Button variant='outline' onClick={onReset}>
-                                Reset
+                    <div className='flex flex-col items-center justify-center gap-3'>
+                        <div className='flex items-center gap-4'>
+                            <Button
+                                onClick={onCheckPlagiarism}
+                                disabled={!textInput.trim() || loading || extracting || wordCount > 1000000}
+                                size='lg'
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2Icon className='mr-2 animate-spin' />
+                                        Analyzing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FileSearch className='mr-2' />
+                                        Check Plagiarism (2 Credits)
+                                    </>
+                                )}
                             </Button>
+                            {(textInput || file) && !loading && (
+                                <Button variant='outline' onClick={onReset}>
+                                    Reset
+                                </Button>
+                            )}
+                        </div>
+                        {textInput && (
+                            <p className={`text-xs ${wordCount > 1000000 ? 'text-red-500' : 'text-gray-400'}`}>
+                                {wordCount.toLocaleString()} words — maximum is 1,000,000 words
+                            </p>
                         )}
                     </div>
                         
