@@ -76,6 +76,9 @@ function CoverPageCreator() {
                 setUploadedImage(reader.result as string)
                 toast.success('Image uploaded successfully')
             }
+            reader.onerror = () => {
+                toast.error('Failed to read image file')
+            }
             reader.readAsDataURL(file)
         }
     }

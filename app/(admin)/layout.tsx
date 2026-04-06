@@ -56,10 +56,6 @@ export default function AdminLayout({
         )
     }
 
-    if (!user) {
-        return null
-    }
-
     return (
         <div className='flex h-screen bg-gray-50'>
             <AdminSidebar />

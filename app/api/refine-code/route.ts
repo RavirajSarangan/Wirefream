@@ -4,14 +4,18 @@ import { db } from '@/configs/db'
 import { CodeRefinementsTable, WireframeToCodeTable } from '@/configs/schema'
 import { eq } from 'drizzle-orm'
 
-const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_AI_API_KEY,
-})
-
 export async function POST(req: NextRequest) {
     try {
         const { wireframeUid, userMessage, currentCode, email } = await req.json()
+
+        if (!process.env.OPENROUTER_AI_API_KEY) {
+            return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
+        }
+
+        const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_AI_API_KEY,
+        })
 
         if (!userMessage || !currentCode) {
             return NextResponse.json(

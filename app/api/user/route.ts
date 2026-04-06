@@ -5,39 +5,43 @@ import { db } from "@/configs/db";
 import { usersTable } from "@/configs/schema";
 
 export async function POST(req: NextRequest) {
-    const { userEmail, userName } = await req.json();
-    console.log(userEmail)
-    // try {
-    const result = await db.select().from(usersTable)
-        .where(eq(usersTable.email, userEmail));
+    try {
+        const { userEmail, userName } = await req.json();
 
-    if (result?.length === 0) {
+        const result = await db.select().from(usersTable)
+            .where(eq(usersTable.email, userEmail));
 
-        const result: any = await db.insert(usersTable).values({
-            name: userName,
-            email: userEmail,
-            credits: 3,
-            // @ts-ignore
-        }).returning(usersTable);
+        if (result?.length === 0) {
+            const inserted = await db.insert(usersTable).values({
+                name: userName,
+                email: userEmail,
+                credits: 3,
+            }).returning();
 
+            return NextResponse.json(inserted.length > 0 ? inserted[0] : null);
+        }
         return NextResponse.json(result.length > 0 ? result[0] : null);
+    } catch (e: any) {
+        console.error('User POST error:', e);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-    return NextResponse.json(result.length > 0 ? result[0] : null);
-
-
-    // } catch (e) {
-    //     return NextResponse.json(e)
-    // }
 }
 
 export async function GET(req: Request) {
-    const reqUrl = req.url;
-    const { searchParams } = new URL(reqUrl);
-    const email = searchParams?.get('email');
+    try {
+        const reqUrl = req.url;
+        const { searchParams } = new URL(reqUrl);
+        const email = searchParams?.get('email');
 
-    if (email) {
-        const result = await db.select().from(usersTable)
-            .where(eq(usersTable.email, email));
-        return NextResponse.json(result.length > 0 ? result[0] : null);
+        if (email) {
+            const result = await db.select().from(usersTable)
+                .where(eq(usersTable.email, email));
+            return NextResponse.json(result.length > 0 ? result[0] : null);
+        }
+
+        return NextResponse.json({ error: 'Email required' }, { status: 400 });
+    } catch (e: any) {
+        console.error('User GET error:', e);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

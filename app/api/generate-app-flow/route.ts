@@ -6,17 +6,20 @@ import { eq, desc } from "drizzle-orm";
 //@ts-ignore
 import uuid4 from "uuid4";
 
-const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_AI_API_KEY,
-});
-
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
     const { appDescription, model, email } = await req.json();
 
     try {
+        if (!process.env.OPENROUTER_AI_API_KEY) {
+            return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
+        }
+
+        const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_AI_API_KEY,
+        });
         // Check user credits
         const creditResult = await db.select().from(usersTable)
             .where(eq(usersTable.email, email));
@@ -67,9 +70,6 @@ Guidelines:
 
 Return ONLY the JSON object, no markdown, no explanations.`;
 
-        console.log('Generating app flow with model:', model);
-        console.log('App description:', appDescription);
-        
         const response = await openai.chat.completions.create({
             model: model,
             messages: [

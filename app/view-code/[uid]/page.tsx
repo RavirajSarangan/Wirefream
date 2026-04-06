@@ -36,7 +36,6 @@ function ViewCode() {
     }, [uid])
 
     const GetRecordInfo = async (regen = false) => {
-        console.log("RUN...")
         setIsReady(false);
         setCodeResp('');
         setLoading(true)
@@ -81,29 +80,23 @@ function ViewCode() {
 
             const text = (decoder.decode(value)).replace('```jsx', '').replace('```javascript', '').replace('javascript', '').replace('jsx', '').replace('```', '');
             setCodeResp((prev) => prev + text);
-            console.log(text);
-
         }
 
         setIsReady(true);
-        UpdateCodeToDb();
     }
 
     useEffect(() => {
         if (codeResp !== '' && record?.uid && isReady && record?.code === null) {
             UpdateCodeToDb();
         }
-    }, [codeResp && record && isReady])
+    }, [codeResp, record, isReady])
 
 
     const UpdateCodeToDb = async () => {
-        console.log(record)
-        const result = await axios.put('/api/wireframe-to-code', {
+        await axios.put('/api/wireframe-to-code', {
             uid: record?.uid,
             codeResp: { resp: codeResp }
         });
-
-        console.log(result);
     }
 
     const downloadZIP = async () => {

@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_AI_API_KEY,
-});
-
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
@@ -25,6 +20,11 @@ export async function POST(req: NextRequest) {
                 { status: 500 }
             );
         }
+
+        const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_AI_API_KEY,
+        });
 
         // Determine model name based on selection
         const modelMap: { [key: string]: string } = {

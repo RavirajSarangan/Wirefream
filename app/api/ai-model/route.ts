@@ -1,20 +1,23 @@
 import Constants from "@/data/Constants";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_AI_API_KEY || process.env.OPENROUTER_API_KEY,
-
-});
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
     try {
         const { model, description, imageUrl } = await req.json();
 
+        if (!process.env.OPENROUTER_AI_API_KEY && !process.env.OPENROUTER_API_KEY) {
+            return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
+        }
+
+        const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_AI_API_KEY || process.env.OPENROUTER_API_KEY,
+        });
+
         const ModelObj = Constants.AiModelList.find(item => item.name === model);
         const modelName = ModelObj?.modelName;
-        console.log(modelName);
         const response = await openai.chat.completions.create({
             model: modelName ?? 'google/gemma-3n-e2b-it:free',
             stream: true,

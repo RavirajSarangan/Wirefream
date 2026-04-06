@@ -5,11 +5,6 @@ import { PlagiarismChecksTable, usersTable } from "@/configs/schema";
 import { eq } from "drizzle-orm";
 import Constants from "@/data/Constants";
 
-const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_AI_API_KEY || process.env.OPENROUTER_API_KEY,
-});
-
 // Generate unique ID
 const generateUID = () => {
     return crypto.randomUUID();
@@ -121,6 +116,15 @@ Return ONLY a valid JSON object with this exact structure:
 }
 
 Be thorough, specific, and professional. Return ONLY the JSON object, no other text.`;
+
+        if (!process.env.OPENROUTER_AI_API_KEY && !process.env.OPENROUTER_API_KEY) {
+            return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
+        }
+
+        const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_AI_API_KEY || process.env.OPENROUTER_API_KEY,
+        });
 
         // Call AI for analysis
         const response = await openai.chat.completions.create({
