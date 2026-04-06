@@ -5,8 +5,12 @@ import axios from 'axios'
 import { Loader2, Download } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import SelectionDetail from '../_components/SelectionDetail'
-import CodeEditor from '../_components/CodeEditor'
+const CodeEditor = dynamic(() => import('../_components/CodeEditor'), {
+    ssr: false,
+    loading: () => <div className="h-[600px] animate-pulse bg-gray-100 rounded-lg" />
+})
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 

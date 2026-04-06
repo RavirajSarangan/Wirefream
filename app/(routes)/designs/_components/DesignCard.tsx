@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Code, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { memo, useState } from 'react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -203,4 +203,4 @@ function DesignCard({ item, onDelete }: { item: any; onDelete: (uid: string) => 
     )
 }
 
-export default DesignCard
+export default memo(DesignCard)

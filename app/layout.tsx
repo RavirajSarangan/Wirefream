@@ -86,7 +86,7 @@ export const metadata: Metadata = {
   category: 'technology',
 };
 
-const outfit = Outfit({ subsets: ['latin'] })
+const outfit = Outfit({ subsets: ['latin'], display: 'swap' })
 
 export default function RootLayout({
   children,

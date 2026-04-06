@@ -1,5 +1,8 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
+
+// Cache mermaid module — only imported and initialized once across all renders
+let mermaidInstance: typeof import('mermaid').default | null = null
 import { GitBranch, Download, Loader2Icon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -22,26 +25,26 @@ function FlowDiagram({ mermaidSyntax, appName }: FlowDiagramProps) {
             setRenderError(false)
 
             try {
-                // Dynamically import mermaid to avoid SSR issues
-                const mermaid = (await import('mermaid')).default
-
-                // Initialize mermaid with configuration
-                mermaid.initialize({
-                    startOnLoad: false,
-                    theme: 'default',
-                    securityLevel: 'loose',
-                    flowchart: {
-                        useMaxWidth: true,
-                        htmlLabels: true,
-                        curve: 'basis'
-                    }
-                })
+                // Load and initialize mermaid only once
+                if (!mermaidInstance) {
+                    mermaidInstance = (await import('mermaid')).default
+                    mermaidInstance.initialize({
+                        startOnLoad: false,
+                        theme: 'default',
+                        securityLevel: 'loose',
+                        flowchart: {
+                            useMaxWidth: true,
+                            htmlLabels: true,
+                            curve: 'basis'
+                        }
+                    })
+                }
 
                 // Clear previous diagram
                 diagramRef.current.innerHTML = ''
 
                 // Render the diagram
-                const { svg } = await mermaid.render(
+                const { svg } = await mermaidInstance.render(
                     `mermaid-diagram-${Date.now()}`,
                     mermaidSyntax
                 )

@@ -1,6 +1,7 @@
 "use client"
 import { auth } from '@/configs/firebaseConfig';
 import { signOut } from 'firebase/auth';
+import Image from 'next/image';
 import React, { useState, useEffect } from 'react'
 import { useAuthContext } from '../provider';
 import {
@@ -52,7 +53,7 @@ function ProfileAvatar() {
         <div>
             <Popover >
                 <PopoverTrigger>
-                    {user?.user?.photoURL && <img src={user?.user?.photoURL} alt='profile' className='w-[35px] h-[35px] rounded-full' />}
+                    {user?.user?.photoURL && <Image src={user?.user?.photoURL} alt='profile' width={35} height={35} className='rounded-full' />}
                 </PopoverTrigger>
                 <PopoverContent className='w-auto'>
                     <div className='space-y-2'>

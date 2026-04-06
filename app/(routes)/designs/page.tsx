@@ -3,7 +3,7 @@ import { useAuthContext } from '@/app/provider'
 
 // SEO: Private page - metadata in server component wrapper
 import axios from 'axios';
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import DesignCard from './_components/DesignCard';
 import { RECORD } from '@/app/view-code/[uid]/page';
 import { Input } from '@/components/ui/input';
@@ -15,17 +15,18 @@ function Designs() {
 
     const { user } = useAuthContext();
     const [wireframeList, setWireframeList] = useState([]);
+    const [searchInput, setSearchInput] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedModel, setSelectedModel] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('newest');
-    
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
     useEffect(() => {
         user && GetAllUserWireframe();
     }, [user])
 
     const GetAllUserWireframe = async () => {
         const result = await axios.get('/api/wireframe-to-code?email=' + user?.email);
-        console.log(result.data);
         setWireframeList(result.data);
     }
 
@@ -34,13 +35,19 @@ function Designs() {
         setWireframeList(prev => prev.filter((item: any) => item.uid !== uid));
     }
 
+    const handleSearch = (val: string) => {
+        setSearchInput(val)
+        clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => setSearchTerm(val), 300)
+    }
+
     // Filter and sort designs
     const filteredDesigns = useMemo(() => {
         let filtered = [...wireframeList];
 
         // Search filter
         if (searchTerm) {
-            filtered = filtered.filter((item: RECORD) => 
+            filtered = filtered.filter((item: RECORD) =>
                 item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.model?.toLowerCase().includes(searchTerm.toLowerCase())
             );
@@ -48,7 +55,7 @@ function Designs() {
 
         // Model filter
         if (selectedModel && selectedModel !== 'all') {
-            filtered = filtered.filter((item: RECORD) => 
+            filtered = filtered.filter((item: RECORD) =>
                 item.model === selectedModel
             );
         }
@@ -78,8 +85,8 @@ function Designs() {
                     <Input
                         type='text'
                         placeholder='Search designs...'
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        value={searchInput}
+                        onChange={(e) => handleSearch(e.target.value)}
                         className='pl-10'
                     />
                 </div>
@@ -123,13 +130,13 @@ function Designs() {
                     <p>No designs yet. Create your first wireframe!</p>
                 </div>
             )}
-            
+
             {wireframeList?.length > 0 && filteredDesigns.length === 0 && (
                 <div className='mt-10 text-center text-gray-400'>
                     <p>No designs match your filters</p>
                 </div>
             )}
-            
+
             {wireframeList?.length > 0 && filteredDesigns.length > 0 && (
                 <div className='grid grid-cols-2 lg:grid-cols-3 gap-7 mt-10'>
                     {filteredDesigns?.map((item: RECORD) => (
